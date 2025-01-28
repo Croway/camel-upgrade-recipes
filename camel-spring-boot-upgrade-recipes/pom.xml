@@ -42,10 +42,6 @@
             <artifactId>camel-upgrade-recipes</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.openrewrite.recipe</groupId>
-            <artifactId>rewrite-spring</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
