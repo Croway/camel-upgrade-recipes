@@ -1,0 +1,118 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+#####
+# Rules coming from https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html
+#####
+
+#####
+# Update the Camel project from 3.1 to 3.2
+#####
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel32.CamelMigrationRecipe
+displayName: Migrates `camel 3.1` application to `camel 3.2`
+description: Migrates `camel 3.1` application to `camel 3.2` based on the upgrade guide at https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html.
+recipeList:
+  # Class removals and package relocations
+  - org.apache.camel.upgrade.camel32.removedCamelCloudClasses
+
+  # Dependency changes (Karaf components)
+  - org.apache.camel.upgrade.camel32.karafGroupIdChange
+
+  # Removed components
+  - org.apache.camel.upgrade.camel32.removedComponents
+
+  # XML DSL changes
+  - org.apache.camel.upgrade.camel32.xml.XmlDsl32Recipe
+
+  # Java API changes
+  - org.apache.camel.upgrade.camel32.java.CamelAPIsRecipe
+---
+# Camel Cloud ServiceDiscovery implementations removed
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel32.removedCamelCloudClasses
+displayName: Removed Camel Cloud classes in Camel 3.2
+description: Remove Camel Cloud ServiceDiscovery implementations that were removed in 3.2.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.cloud.CachingServiceDiscovery
+      newFullyQualifiedTypeName: org.apache.camel.impl.cloud.ServiceCallServiceDiscovery
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.cloud.CachingServiceDiscoveryFactory
+      newFullyQualifiedTypeName: org.apache.camel.impl.cloud.ServiceCallServiceDiscoveryFactory
+
+---
+# Karaf components groupId change from org.apache.camel → org.apache.camel.karaf
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel32.karafGroupIdChange
+displayName: Change Karaf component groupId to org.apache.camel.karaf
+description: Apache Camel 3.2 moved Karaf/OSGi components to a separate project with groupId org.apache.camel.karaf.
+recipeList:
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: org.apache.camel
+      oldArtifactId: camel-blueprint
+      newGroupId: org.apache.camel.karaf
+      newArtifactId: camel-blueprint
+      newVersion: 3.2.x
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: org.apache.camel
+      oldArtifactId: camel-test-blueprint
+      newGroupId: org.apache.camel.karaf
+      newArtifactId: camel-test-blueprint
+      newVersion: 3.2.x
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: org.apache.camel
+      oldArtifactId: camel-test-karaf
+      newGroupId: org.apache.camel.karaf
+      newArtifactId: camel-test-karaf
+      newVersion: 3.2.x
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: org.apache.camel
+      oldArtifactId: camel-eventadmin
+      newGroupId: org.apache.camel.karaf
+      newArtifactId: camel-eventadmin
+      newVersion: 3.2.x
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: org.apache.camel
+      oldArtifactId: camel-kura
+      newGroupId: org.apache.camel.karaf
+      newArtifactId: camel-kura
+      newVersion: 3.2.x
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: org.apache.camel
+      oldArtifactId: camel-osgi-activator
+      newGroupId: org.apache.camel.karaf
+      newArtifactId: camel-osgi-activator
+      newVersion: 3.2.x
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: org.apache.camel
+      oldArtifactId: camel-paxlogging
+      newGroupId: org.apache.camel.karaf
+      newArtifactId: camel-paxlogging
+      newVersion: 3.2.x
+
+---
+# Remove deprecated components
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel32.removedComponents
+displayName: Remove components that were removed in Camel 3.2
+description: Remove dependencies for components that were removed in Camel 3.2.
+recipeList:
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: org.apache.camel
+      artifactId: camel-spark-rest

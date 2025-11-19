@@ -116,19 +116,18 @@
             <scope>test</scope>
         </dependency>
 
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-api</artifactId>
-                <version>5.13.4</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>5.13.4</version>
-                <scope>test</scope>
-            </dependency>
-
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.13.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.13.4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -174,7 +173,25 @@
                                 <!-- camel 2.25 dependencies -->
                                 <artifactItem>
                                     <groupId>org.apache.camel</groupId>
+                                    <artifactId>camel-aws</artifactId>
+                                    <version>${camel2.25-version}</version>
+                                    <outputDirectory>${rewrite-tmp-classpath}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.camel</groupId>
                                     <artifactId>camel-core</artifactId>
+                                    <version>${camel2.25-version}</version>
+                                    <outputDirectory>${rewrite-tmp-classpath}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.camel</groupId>
+                                    <artifactId>camel-jibx</artifactId>
+                                    <version>${camel2.25-version}</version>
+                                    <outputDirectory>${rewrite-tmp-classpath}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.camel</groupId>
+                                    <artifactId>camel-linkedin</artifactId>
                                     <version>${camel2.25-version}</version>
                                     <outputDirectory>${rewrite-tmp-classpath}</outputDirectory>
                                 </artifactItem>
@@ -193,6 +210,24 @@
                                 <artifactItem>
                                     <groupId>org.apache.camel</groupId>
                                     <artifactId>camel-test</artifactId>
+                                    <version>${camel2.25-version}</version>
+                                    <outputDirectory>${rewrite-tmp-classpath}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.camel</groupId>
+                                    <artifactId>camel-mongodb3</artifactId>
+                                    <version>${camel2.25-version}</version>
+                                    <outputDirectory>${rewrite-tmp-classpath}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.camel</groupId>
+                                    <artifactId>camel-netty4</artifactId>
+                                    <version>${camel2.25-version}</version>
+                                    <outputDirectory>${rewrite-tmp-classpath}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.camel</groupId>
+                                    <artifactId>camel-quartz2</artifactId>
                                     <version>${camel2.25-version}</version>
                                     <outputDirectory>${rewrite-tmp-classpath}</outputDirectory>
                                 </artifactItem>
@@ -218,6 +253,12 @@
                                 </artifactItem>
 
                                 <!-- camel 3.1 dependencies -->
+                                <artifactItem>
+                                    <groupId>org.apache.camel</groupId>
+                                    <artifactId>camel-core</artifactId>
+                                    <version>${camel3.1-version}</version>
+                                    <outputDirectory>${rewrite-tmp-classpath}</outputDirectory>
+                                </artifactItem>
                                 <artifactItem>
                                     <groupId>org.apache.camel</groupId>
                                     <artifactId>camel-api</artifactId>

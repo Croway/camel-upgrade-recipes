@@ -44,19 +44,6 @@ recipeList:
 
   # Java API changes
   - org.apache.camel.upgrade.camel31.java.CamelAPIsRecipe
-
-  # Update Camel versions in Maven dependencies
-  - org.openrewrite.maven.UpgradeDependencyVersion:
-      groupId: org.apache.camel
-      artifactId: '*'
-      newVersion: 3.1.x
-      overrideManagedVersion: false
-  - org.openrewrite.maven.UpgradeDependencyVersion:
-      groupId: org.apache.camel.springboot
-      artifactId: '*'
-      newVersion: 3.1.x
-      overrideManagedVersion: false
-
 ---
 # Package and class relocations
 type: specs.openrewrite.org/v1beta/recipe

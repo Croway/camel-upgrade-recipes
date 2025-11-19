@@ -28,8 +28,8 @@ name: org.apache.camel.upgrade.camel30.CamelMigrationRecipe
 displayName: Migrates `camel 2.x` application to `camel 3.0`
 description: Migrates `camel 2.x` application to `camel 3.0` based on the official Apache Camel 3.0 migration guide.
 recipeList:
-  # Java 8 to Java 11 migration (includes JAXB dependencies)
-  - org.openrewrite.java.migrate.UpgradeToJava11
+  # Method name changes (must run before class renames to match old types)
+  - org.apache.camel.upgrade.camel30.methodRenames
 
   # Simple class/package renames
   - org.apache.camel.upgrade.camel30.renamedClasses
@@ -41,7 +41,6 @@ recipeList:
   - org.apache.camel.upgrade.camel30.componentRenames
 
   # Maven dependency changes
-  - org.apache.camel.upgrade.camel30.springBootStarterGroupIdChange
   - org.apache.camel.upgrade.camel30.awsComponentSplit
   - org.apache.camel.upgrade.camel30.removedDependencies
 
@@ -50,19 +49,6 @@ recipeList:
 
   # XML DSL changes
   - org.apache.camel.upgrade.camel30.xml.XmlDsl30Recipe
-
-  # Update Camel versions in Maven dependencies
-  - org.openrewrite.maven.UpgradeDependencyVersion:
-      groupId: org.apache.camel
-      artifactId: '*'
-      newVersion: 3.0.x
-      overrideManagedVersion: false
-  - org.openrewrite.maven.UpgradeDependencyVersion:
-      groupId: org.apache.camel.springboot
-      artifactId: '*'
-      newVersion: 3.0.x
-      overrideManagedVersion: false
-
 ---
 # Package and class relocations from org.apache.camel.impl to org.apache.camel.impl.engine
 type: specs.openrewrite.org/v1beta/recipe
@@ -327,20 +313,6 @@ recipeList:
       newFullyQualifiedTypeName: org.apache.camel.component.rxjava.RxJavaEndpoint
 
 ---
-# Spring Boot starter groupId change
-type: specs.openrewrite.org/v1beta/recipe
-name: org.apache.camel.upgrade.camel30.springBootStarterGroupIdChange
-displayName: Change Spring Boot starter groupId to org.apache.camel.springboot
-description: Apache Camel 3.0 changed Spring Boot starters from org.apache.camel to org.apache.camel.springboot groupId.
-recipeList:
-  - org.openrewrite.maven.ChangeParentPom:
-      oldGroupId: org.apache.camel
-      oldArtifactId: camel-spring-boot-dependencies
-      newGroupId: org.apache.camel.springboot
-      newArtifactId: camel-spring-boot-dependencies
-      newVersion: 3.0.x
-
----
 # AWS component split
 type: specs.openrewrite.org/v1beta/recipe
 name: org.apache.camel.upgrade.camel30.awsComponentSplit
@@ -352,7 +324,7 @@ recipeList:
       oldArtifactId: camel-aws
       newGroupId: org.apache.camel
       newArtifactId: camel-aws-s3
-      newVersion: 3.0.x
+      newVersion: 3.0.0
   # Note: Users will need to manually add other AWS component dependencies as needed
   # (camel-aws-sqs, camel-aws-sns, camel-aws-kinesis, etc.)
 
@@ -383,3 +355,18 @@ recipeList:
   - org.openrewrite.maven.RemoveDependency:
       groupId: org.apache.camel
       artifactId: camel-restlet
+
+---
+# Method name changes for Camel 3.0
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel30.methodRenames
+displayName: Renamed methods in Camel 3.0
+description: Apache Camel 3.0 renamed several methods (CamelContext.getProperties() → getGlobalOptions()).
+recipeList:
+  # CamelContext.getProperties() → CamelContext.getGlobalOptions()
+  - org.openrewrite.java.ChangeMethodName:
+      methodPattern: org.apache.camel.CamelContext getProperties()
+      newMethodName: getGlobalOptions
+  # Note: Registry.put() → Registry.bind() is handled in CamelAPIsRecipe
+  # because SimpleRegistry inherits put() from HashMap, so we need to match
+  # based on the receiver type, not the method's declaring type

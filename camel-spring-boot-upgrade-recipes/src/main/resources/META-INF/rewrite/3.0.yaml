@@ -1,0 +1,53 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+#####
+# Rules coming from https://camel.apache.org/manual/camel-3-migration-guide.html
+#####
+
+#####
+# Update the Camel Spring Boot project from 2.x to 3.0
+#####
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel30.CamelSpringBootMigrationRecipe
+displayName: Migrates `Camel Spring Boot 2.x` application to `camel Spring Boot 3.0`
+description: Migrates `camel Spring Boot 2.x` application to `camel Spring Boot 3.0` based on the official Apache Camel 3.0 migration guide.
+recipeList:
+  # Simple class/package renames
+  - org.apache.camel.upgrade.camel30.CamelMigrationRecipe
+  # Maven dependency changes
+  - org.apache.camel.upgrade.camel30.springBootStarterGroupIdChange
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.apache.camel.springboot
+      artifactId: '*'
+      newVersion: 3.0.0
+      overrideManagedVersion: false
+
+---
+# Spring Boot starter groupId change
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel30.springBootStarterGroupIdChange
+displayName: Change Spring Boot starter groupId to org.apache.camel.springboot
+description: Apache Camel 3.0 changed Spring Boot starters from org.apache.camel to org.apache.camel.springboot groupId.
+recipeList:
+  - org.openrewrite.maven.ChangeParentPom:
+      oldGroupId: org.apache.camel
+      oldArtifactId: camel-spring-boot-dependencies
+      newGroupId: org.apache.camel.springboot
+      newArtifactId: camel-spring-boot-dependencies
+      newVersion: 3.0.0

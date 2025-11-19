@@ -274,3 +274,112 @@ See the table for more details:
 | https://camel.apache.org/manual/camel-4x-upgrade-guide-4_9.html#_removed_api[Removed API] | covered |
 
 
+== 3.2.0
+
+=== Summary
+
+This release provides migration recipes for upgrading from Apache Camel 3.1 to 3.2, based on the https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html[official upgrade guide].
+
+=== Migration coverage
+
+The following table lists migration topics and indicates the level of coverage (full, partial, or not covered), along with additional comments.
+
+[%autowidth,stripes=hover]
+|===
+| Migration | Coverage | Comment
+
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_jndiregistry[JndiRegistry] | ✅ Full | Automatically replaced with JndiBeanRepository.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_rest_configuration[Rest Configuration] | ⚠️ Partial | API changes are detected with warning comments. Manual migration required for restructured RestConfiguration API.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_camel_cloud[Camel Cloud] | ⚠️ Partial | Removed ServiceDiscovery classes are replaced with available alternatives. Full Camel Cloud functionality moved to external project.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_camel_with_karaf_and_osgi[Karaf/OSGi Components] | ✅ Full | All Karaf component dependencies automatically updated from org.apache.camel to org.apache.camel.karaf groupId.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_camel_elytron[camel-elytron] | ❌ None | Manual dependency review required.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_camel_spark_rest[camel-spark-rest] | ✅ Full | Dependency automatically removed.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_eips_with_cachesize_option[EIPs cacheSize] | ❌ None | Not supported by the migration tool. Manual review required for EIP cacheSize configurations.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_configuring_components_via_java_setters[Component Java Configuration] | ⚠️ Partial | Detection in place for common patterns. Manual migration required: component.setProperty() → component.getConfiguration().setProperty()
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_configuring_components_via_spring_boot_auto_configuration[Spring Boot Configuration] | ❌ None | Manual migration required: remove .configuration prefix from property keys (e.g., camel.component.kafka.configuration.brokers → camel.component.kafka.brokers)
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_camel_any23[camel-any23] | ❌ None | Manual migration required: flatten nested <configuration> elements. See upgrade guide for examples.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_camel_avro[camel-avro] | ⚠️ Partial | Dependency version updated. Users must manually add camel-avro-rpc if using Avro RPC endpoints.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_camel_infinispan[camel-infinispan] | ❌ None | Manual migration required: endpoint URIs must include context-path (infinispan → infinispan:current)
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_camel_xstream[camel-xstream] | ❌ None | Manual migration required: flatten nested configuration elements. See upgrade guide for examples.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_camel_weather[camel-weather] | ❌ None | Not supported by the migration tool. Manual HttpClient 4.x configuration required.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_endpoint_uris_without_context_path[Endpoint URIs] | ❌ None | Not supported by the migration tool. Endpoints must include context-path (e.g., log → log:name)
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_error_handling[Error Handling] | ❌ None | Not supported by the migration tool. Manual migration required for onException/onCompletion processor sharing changes.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_configuring_milli_seconds[Millisecond Configuration] | ❌ None | Not supported by the migration tool. Time patterns (e.g., "5s") must be converted to milliseconds (e.g., "5000")
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_main_in_camel_spring[Main in camel-spring] | ❌ None | Not supported by the migration tool. Update imports from camel-spring to camel-spring-main.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_main_in_camel_test_blueprint[Main in camel-test-blueprint] | ❌ None | Not supported by the migration tool. Update class references and dependencies.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_api_changes[API Changes] | ⚠️ Partial | Common deprecated method removals handled with warning comments.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_2.html#_jmx_connector_configuration_removed[JMX Connector] | ❌ None | Not supported by the migration tool. Use standard JVM JMX remote capabilities.
+|===
+
+=== Manual migration steps required
+
+After running the automated recipes, the following manual steps may be required:
+
+1. **Rest Configuration API**: Update code using removed CamelContext methods:
+   - `addRestConfiguration(RestConfiguration)` → Use `getRestConfiguration()` instead
+   - `getRestConfiguration(String, boolean)` → Use `getRestConfiguration()` instead
+   - `getRestConfigurations()` → Use `getRestConfiguration()` instead
+
+2. **Component Configuration (Java)**: Update component configuration calls for affected components (kafka, aws, aws2, consul, etcd, infinispan, servicenow, ssh, stomp, xmlsecurity, yammer):
+   ```java
+   // Before
+   KafkaComponent kafka = new KafkaComponent();
+   kafka.setBrokers("mybroker:1234");
+
+   // After
+   KafkaComponent kafka = new KafkaComponent();
+   kafka.getConfiguration().setBrokers("mybroker:1234");
+   ```
+
+3. **Spring Boot Properties**: Remove `.configuration` prefix from component properties:
+   ```properties
+   # Before
+   camel.component.kafka.configuration.brokers=mybroker:1234
+
+   # After
+   camel.component.kafka.brokers=mybroker:1234
+   ```
+
+4. **Infinispan Endpoints**: Add context-path to endpoint URIs:
+   ```java
+   from("infinispan")  // Before
+   from("infinispan:current")  // After
+   ```
+
+5. **Error Handling**: If using shared processors in onException/onCompletion at context level, extract to intermediate routes:
+   ```java
+   // Before
+   onException(Exception.class).handled(true)
+       .loadBalance().roundRobin().id("round")
+       .to("mock:error", "mock:error2");
+
+   // After
+   onException(Exception.class).handled(true).to("direct:error");
+   from("direct:error").loadBalance().roundRobin().id("round")
+       .to("mock:error", "mock:error2");
+   ```
+
+6. **Time Patterns**: Convert time pattern strings to milliseconds:
+   ```java
+   from("timer:foo?period=5s")      // Before
+   from("timer:foo?period=5000")    // After
+   ```
+
+7. **Avro RPC Users**: If using Avro RPC endpoints (avro://), add dependency:
+   ```xml
+   <dependency>
+       <groupId>org.apache.camel</groupId>
+       <artifactId>camel-avro-rpc</artifactId>
+       <version>3.2.0</version>
+   </dependency>
+   ```
+
+8. **JMX Remote Access**: If you were using JMX Connector configuration, switch to standard JVM settings:
+   ```
+   -Dcom.sun.management.jmxremote.port=9913
+   -Dcom.sun.management.jmxremote.authenticate=false
+   -Dcom.sun.management.jmxremote.ssl=false
+   -Djava.rmi.server.hostname=localhost
+   ```
+
+

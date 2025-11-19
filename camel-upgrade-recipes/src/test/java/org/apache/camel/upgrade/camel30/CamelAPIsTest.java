@@ -270,44 +270,4 @@ public class CamelAPIsTest implements RewriteTest {
             """
         ));
     }
-
-    /**
-     * Test Spring Boot starter groupId change
-     * https://camel.apache.org/manual/camel-3-migration-guide.html#_spring_boot_starters_maven_coordinate_change
-     */
-    @Test
-    void testSpringBootStarterGroupIdChange() {
-        rewriteRun(pomXml(
-            """
-            <project>
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>com.example</groupId>
-                <artifactId>test</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.camel</groupId>
-                        <artifactId>camel-aws-starter</artifactId>
-                        <version>2.25.0</version>
-                    </dependency>
-                </dependencies>
-            </project>
-            """,
-            """
-            <project>
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>com.example</groupId>
-                <artifactId>test</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.camel.springboot</groupId>
-                        <artifactId>camel-aws-s3-starter</artifactId>
-                        <version>3.0.x</version>
-                    </dependency>
-                </dependencies>
-            </project>
-            """
-        ));
-    }
 }

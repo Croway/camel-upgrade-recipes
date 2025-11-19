@@ -79,39 +79,51 @@ public class XmlDsl30Recipe extends Recipe {
 
                 // Apply tag renames
                 for (Map.Entry<XPathMatcher, String> entry : TAG_RENAMES.entrySet()) {
-                    if (entry.getKey().matches(getCursor())) {
-                        t = t.withName(entry.getValue());
+                    if (entry.getKey().matches(getCursor()) && !entry.getValue().equals(t.getName())) {
+                        return t.withName(entry.getValue());
                     }
                 }
 
                 // Apply nested element renames
                 for (Map.Entry<XPathMatcher, String> entry : NESTED_ELEMENT_RENAMES.entrySet()) {
-                    if (entry.getKey().matches(getCursor())) {
-                        t = t.withName(entry.getValue());
-                    }
-                }
-
-                // Apply attribute renames
-                for (Map.Entry<XPathMatcher, Map<String, String>> entry : ATTRIBUTE_RENAMES.entrySet()) {
-                    if (entry.getKey().matches(getCursor())) {
-                        for (Map.Entry<String, String> attrRename : entry.getValue().entrySet()) {
-                            t = renameAttribute(t, attrRename.getKey(), attrRename.getValue());
-                        }
+                    if (entry.getKey().matches(getCursor()) && !entry.getValue().equals(t.getName())) {
+                        return t.withName(entry.getValue());
                     }
                 }
 
                 // Handle <hystrix> → <circuitBreaker> rename
                 if ("hystrix".equals(t.getName()) && new XPathMatcher("//*").matches(getCursor())) {
-                    t = t.withName("circuitBreaker");
+                    return t.withName("circuitBreaker");
+                }
+
+                // Apply attribute renames (these don't change the tag name, so we can batch them)
+                for (Map.Entry<XPathMatcher, Map<String, String>> entry : ATTRIBUTE_RENAMES.entrySet()) {
+                    if (entry.getKey().matches(getCursor())) {
+                        for (Map.Entry<String, String> attrRename : entry.getValue().entrySet()) {
+                            Xml.Tag renamed = renameAttribute(t, attrRename.getKey(), attrRename.getValue());
+                            if (renamed != t) {
+                                t = renamed;
+                            }
+                        }
+                    }
                 }
 
                 return t;
             }
 
             /**
-             * Renames an attribute on a tag
+             * Renames an attribute on a tag, only if it exists
              */
             private Xml.Tag renameAttribute(Xml.Tag tag, String oldName, String newName) {
+                // Check if the attribute exists first
+                boolean hasAttribute = tag.getAttributes().stream()
+                    .anyMatch(attr -> attr instanceof Xml.Attribute
+                        && oldName.equals(((Xml.Attribute) attr).getKeyAsString()));
+
+                if (!hasAttribute) {
+                    return tag;
+                }
+
                 return tag.withAttributes(
                     tag.getAttributes().stream()
                         .map(attr -> {

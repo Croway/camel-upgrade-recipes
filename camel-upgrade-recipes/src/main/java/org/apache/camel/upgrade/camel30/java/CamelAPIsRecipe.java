@@ -43,9 +43,6 @@ public class CamelAPIsRecipe extends Recipe {
     private static final Logger LOGGER = LoggerFactory.getLogger(CamelAPIsRecipe.class);
 
     // Method matchers for API changes
-    private static final String MATCHER_CONTEXT_GET_PROPERTIES = "org.apache.camel.CamelContext getProperties()";
-    private static final String MATCHER_REGISTRY_PUT = "org.apache.camel.spi.Registry put(java.lang.String, java.lang.Object)";
-    private static final String MATCHER_SIMPLE_REGISTRY_PUT = "org.apache.camel.impl.SimpleRegistry put(java.lang.String, java.lang.Object)";
     private static final String MATCHER_CONTEXT_START_ROUTE = "org.apache.camel.CamelContext startRoute(java.lang.String)";
     private static final String MATCHER_CONTEXT_STOP_ROUTE = "org.apache.camel.CamelContext stopRoute(java.lang.String)";
     private static final String MATCHER_CONTEXT_SUSPEND_ROUTE = "org.apache.camel.CamelContext suspendRoute(java.lang.String)";
@@ -70,16 +67,28 @@ public class CamelAPIsRecipe extends Recipe {
             protected J.MethodInvocation doVisitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation mi = super.doVisitMethodInvocation(method, ctx);
 
-                // CamelContext.getProperties() → CamelContext.getGlobalOptions()
-                if (getMethodMatcher(MATCHER_CONTEXT_GET_PROPERTIES).matches(mi)) {
-                    mi = mi.withName(mi.getName().withSimpleName("getGlobalOptions"));
-                }
+                // Note: CamelContext.getProperties() → CamelContext.getGlobalOptions() is handled in YAML
 
                 // Registry.put() → Registry.bind()
                 // SimpleRegistry.put() → SimpleRegistry.bind()
-                if (getMethodMatcher(MATCHER_REGISTRY_PUT).matches(mi) ||
-                    getMethodMatcher(MATCHER_SIMPLE_REGISTRY_PUT).matches(mi)) {
-                    mi = mi.withName(mi.getName().withSimpleName("bind"));
+                // Note: SimpleRegistry extends HashMap, so put() is inherited. We need to check the
+                // receiver type (select), not the method's declaring type.
+                if ("put".equals(mi.getSimpleName()) && mi.getSelect() != null) {
+                    JavaType.FullyQualified selectType = null;
+                    if (mi.getSelect().getType() instanceof JavaType.FullyQualified) {
+                        selectType = (JavaType.FullyQualified) mi.getSelect().getType();
+                    }
+
+                    if (selectType != null) {
+                        String typeName = selectType.getFullyQualifiedName();
+                        // Match both old package (org.apache.camel.impl) and new package (org.apache.camel.support)
+                        // because ChangeType may have already run
+                        if ("org.apache.camel.impl.SimpleRegistry".equals(typeName) ||
+                            "org.apache.camel.support.SimpleRegistry".equals(typeName) ||
+                            "org.apache.camel.spi.Registry".equals(typeName)) {
+                            mi = mi.withName(mi.getName().withSimpleName("bind"));
+                        }
+                    }
                 }
 
                 // CamelContext.startRoute() → CamelContext.getRouteController().startRoute()

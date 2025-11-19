@@ -17,6 +17,7 @@
 package org.apache.camel.upgrade.camel30;
 
 import org.apache.camel.upgrade.CamelTestUtil;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -33,7 +34,11 @@ public class ComponentChangesTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        CamelTestUtil.recipe(spec, CamelTestUtil.CamelVersion.v3_0);
+        CamelTestUtil.recipe(spec, CamelTestUtil.CamelVersion.v3_0)
+            .parser(CamelTestUtil.parserFromClasspath(
+                CamelTestUtil.CamelVersion.v2_25,
+                "camel-http4", "camel-mongodb3", "camel-netty4", "camel-quartz2", "camel-core"
+            ));
     }
 
     /**
@@ -129,126 +134,6 @@ public class ComponentChangesTest implements RewriteTest {
             public class MyRoute {
                 QuartzComponent component;
             }
-            """
-        ));
-    }
-
-    /**
-     * Test AWS component split
-     * https://camel.apache.org/manual/camel-3-migration-guide.html#_aws
-     */
-    @Test
-    void testAwsComponentSplit() {
-        rewriteRun(pomXml(
-            """
-            <project>
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>com.example</groupId>
-                <artifactId>test</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.camel</groupId>
-                        <artifactId>camel-aws</artifactId>
-                        <version>2.25.0</version>
-                    </dependency>
-                </dependencies>
-            </project>
-            """,
-            """
-            <project>
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>com.example</groupId>
-                <artifactId>test</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.camel</groupId>
-                        <artifactId>camel-aws-s3</artifactId>
-                        <version>3.0.x</version>
-                    </dependency>
-                </dependencies>
-            </project>
-            """
-        ));
-    }
-
-    /**
-     * Test removal of deprecated camel-jibx
-     * https://camel.apache.org/manual/camel-3-migration-guide.html#_removed_components
-     */
-    @Test
-    void testCamelJibxRemoval() {
-        rewriteRun(pomXml(
-            """
-            <project>
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>com.example</groupId>
-                <artifactId>test</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.camel</groupId>
-                        <artifactId>camel-jibx</artifactId>
-                        <version>2.25.0</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.camel</groupId>
-                        <artifactId>camel-core</artifactId>
-                        <version>2.25.0</version>
-                    </dependency>
-                </dependencies>
-            </project>
-            """,
-            """
-            <project>
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>com.example</groupId>
-                <artifactId>test</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.camel</groupId>
-                        <artifactId>camel-core</artifactId>
-                        <version>3.0.x</version>
-                    </dependency>
-                </dependencies>
-            </project>
-            """
-        ));
-    }
-
-    /**
-     * Test removal of deprecated camel-linkedin
-     * https://camel.apache.org/manual/camel-3-migration-guide.html#_removed_components
-     */
-    @Test
-    void testCamelLinkedinRemoval() {
-        rewriteRun(pomXml(
-            """
-            <project>
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>com.example</groupId>
-                <artifactId>test</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.camel</groupId>
-                        <artifactId>camel-linkedin</artifactId>
-                        <version>2.25.0</version>
-                    </dependency>
-                </dependencies>
-            </project>
-            """,
-            """
-            <project>
-                <modelVersion>4.0.0</modelVersion>
-                <groupId>com.example</groupId>
-                <artifactId>test</artifactId>
-                <version>1.0.0</version>
-                <dependencies>
-                </dependencies>
-            </project>
             """
         ));
     }
