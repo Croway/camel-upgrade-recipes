@@ -1,0 +1,86 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+#####
+# Rules coming from https://camel.apache.org/manual/camel-3x-upgrade-guide-3_1.html
+#####
+
+#####
+# Update the Camel project from 3.0 to 3.1
+#####
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel31.CamelMigrationRecipe
+displayName: Migrates `camel 3.0` application to `camel 3.1`
+description: Migrates `camel 3.0` application to `camel 3.1` based on the official Apache Camel 3.x upgrade guide.
+recipeList:
+  # Package relocations
+  - org.apache.camel.upgrade.camel31.renamedClasses
+
+  # Component endpoint URI syntax changes
+  # Note: The following endpoint syntax changes cannot be fully automated:
+  # - camel-etcd: etcd:action/path → etcd-keys:path, etcd-stats:path, or etcd-watch:path
+  # - camel-irc: remove #room from path
+  # - camel-milo-client: tcp:// → opc.tcp://
+  # - camel-nats: nats:servers → nats:topic (move servers to query param)
+  # - camel-nsq: nsq:servers → nsq:topic (move servers to query param)
+  # - camel-ipfs: ipfs:host:port/command → ipfs:command (move host/port to component level)
+  # - camel-xmlsecurity: xmlsecurity:command/name → xmlsecurity-sign:name or xmlsecurity-verify:name
+  # These changes require manual migration or component-specific Java visitors
+
+  # Java API changes
+  - org.apache.camel.upgrade.camel31.java.CamelAPIsRecipe
+
+  # Update Camel versions in Maven dependencies
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.apache.camel
+      artifactId: '*'
+      newVersion: 3.1.x
+      overrideManagedVersion: false
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.apache.camel.springboot
+      artifactId: '*'
+      newVersion: 3.1.x
+      overrideManagedVersion: false
+
+---
+# Package and class relocations
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel31.renamedClasses
+displayName: Renamed classes and packages for Camel 3.1
+description: Apache Camel 3.1 moved some classes to different packages.
+recipeList:
+  # HttpOperationFailedException moved from org.apache.camel.http.common to org.apache.camel.http.base
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.http.common.HttpOperationFailedException
+      newFullyQualifiedTypeName: org.apache.camel.http.base.HttpOperationFailedException
+
+  # Cookie classes moved from org.apache.camel.http.common.cookie to org.apache.camel.http.base.cookie
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.apache.camel.http.common.cookie
+      newPackageName: org.apache.camel.http.base.cookie
+      recursive: true
+
+  # PredicateValidatingProcessor moved from camel-xml-jaxp to camel-support
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.processor.validation.PredicateValidatingProcessor
+      newFullyQualifiedTypeName: org.apache.camel.support.processor.PredicateValidatingProcessor
+
+  # @Experimental annotation moved from meta-annotations to camel-api
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.meta.Experimental
+      newFullyQualifiedTypeName: org.apache.camel.Experimental

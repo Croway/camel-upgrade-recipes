@@ -38,6 +38,7 @@ public class CamelTestUtil {
     public enum CamelVersion {
         v2_25(2, 25, 4),
         v3_0(3, 0, 1),
+        v3_1(3, 1, 0),
         v3_18(3, 18, 6),
         v4_0(4, 0, 3),
         v4_4(4, 4, 2),
