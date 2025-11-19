@@ -92,6 +92,8 @@
         <rewrite-tmp-classpath>${project.build.testOutputDirectory}/META-INF/rewrite/classpath</rewrite-tmp-classpath>
 
         <!-- Old versions of Camel required for the tests -->
+        <camel2.25-version>2.25.4</camel2.25-version>
+        <camel3.0-version>3.0.1</camel3.0-version>
         <camel3.18-version>3.18.6</camel3.18-version>
         <camel4.0-version>4.0.3</camel4.0-version>
         <camel4.4-version>4.4.2</camel4.4-version>

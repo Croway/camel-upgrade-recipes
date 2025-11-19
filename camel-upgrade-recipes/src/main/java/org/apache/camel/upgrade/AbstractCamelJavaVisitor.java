@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
@@ -43,7 +44,7 @@ public abstract class AbstractCamelJavaVisitor extends JavaIsoVisitor<ExecutionC
 
     //There is no need to  initialize all patterns at the class start.
     //Map is a cache for created patterns
-    private static final Map<String, MethodMatcher> methodMatchers = new HashMap<>();
+    private static final Map<String, MethodMatcher> methodMatchers = new ConcurrentHashMap<>();
 
     //cache for patterns
     private static final Map<String, Pattern> patterns = new HashMap<>();
@@ -134,7 +135,7 @@ public abstract class AbstractCamelJavaVisitor extends JavaIsoVisitor<ExecutionC
         try {
             return visitMethod.get();
         } catch (Exception e) {
-            LOGGER.warn(String.format("Internal error detected in %s, recipe is skipped.", getClass().getName()), e);
+            LOGGER.error(String.format("Internal error detected in %s, recipe is skipped.", getClass().getName()), e);
             return origValue;
         }
     }

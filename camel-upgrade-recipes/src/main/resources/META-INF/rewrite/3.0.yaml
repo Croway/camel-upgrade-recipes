@@ -1,0 +1,385 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+#####
+# Rules coming from https://camel.apache.org/manual/camel-3-migration-guide.html
+#####
+
+#####
+# Update the Camel project from 2.x to 3.0
+#####
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel30.CamelMigrationRecipe
+displayName: Migrates `camel 2.x` application to `camel 3.0`
+description: Migrates `camel 2.x` application to `camel 3.0` based on the official Apache Camel 3.0 migration guide.
+recipeList:
+  # Java 8 to Java 11 migration (includes JAXB dependencies)
+  - org.openrewrite.java.migrate.UpgradeToJava11
+
+  # Simple class/package renames
+  - org.apache.camel.upgrade.camel30.renamedClasses
+
+  # Remove deprecated classes
+  - org.apache.camel.upgrade.camel30.removedClasses
+
+  # Component renames and removals
+  - org.apache.camel.upgrade.camel30.componentRenames
+
+  # Maven dependency changes
+  - org.apache.camel.upgrade.camel30.springBootStarterGroupIdChange
+  - org.apache.camel.upgrade.camel30.awsComponentSplit
+  - org.apache.camel.upgrade.camel30.removedDependencies
+
+  # Complex Java API changes
+  - org.apache.camel.upgrade.camel30.java.CamelAPIsRecipe
+
+  # XML DSL changes
+  - org.apache.camel.upgrade.camel30.xml.XmlDsl30Recipe
+
+  # Update Camel versions in Maven dependencies
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.apache.camel
+      artifactId: '*'
+      newVersion: 3.0.x
+      overrideManagedVersion: false
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.apache.camel.springboot
+      artifactId: '*'
+      newVersion: 3.0.x
+      overrideManagedVersion: false
+
+---
+# Package and class relocations from org.apache.camel.impl to org.apache.camel.impl.engine
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel30.renamedClasses
+displayName: Renamed classes and packages for Camel 3.0
+description: Apache Camel 3.0 reorganized many classes from org.apache.camel.impl and org.apache.camel.util into new packages.
+recipeList:
+  # Classes moved from org.apache.camel.impl to org.apache.camel.impl.engine
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.DefaultShutdownStrategy
+      newFullyQualifiedTypeName: org.apache.camel.impl.engine.DefaultShutdownStrategy
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.ThrottlingInflightRoutePolicy
+      newFullyQualifiedTypeName: org.apache.camel.throttling.ThrottlingInflightRoutePolicy
+
+  # Classes moved from org.apache.camel.impl to org.apache.camel.support
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.DefaultComponent
+      newFullyQualifiedTypeName: org.apache.camel.support.DefaultComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.DefaultEndpoint
+      newFullyQualifiedTypeName: org.apache.camel.support.DefaultEndpoint
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.ScheduledPollConsumer
+      newFullyQualifiedTypeName: org.apache.camel.support.ScheduledPollConsumer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.ScheduledPollEndpoint
+      newFullyQualifiedTypeName: org.apache.camel.support.ScheduledPollEndpoint
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.DefaultProducer
+      newFullyQualifiedTypeName: org.apache.camel.support.DefaultProducer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.DefaultConsumer
+      newFullyQualifiedTypeName: org.apache.camel.support.DefaultConsumer
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.SimpleRegistry
+      newFullyQualifiedTypeName: org.apache.camel.support.SimpleRegistry
+
+  # Helper classes moved from org.apache.camel.util to org.apache.camel.support
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.AsyncProcessorHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.AsyncProcessorHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.AsyncProcessorConverterHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.AsyncProcessorConverterHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.CamelContextHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.CamelContextHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.EndpointHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.EndpointHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.EventHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.EventHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.ExchangeHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.ExchangeHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.GZIPHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.GZIPHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.JsonSchemaHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.JsonSchemaHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.MessageHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.MessageHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.PlatformHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.PlatformHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.PredicateAssertHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.PredicateAssertHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.ResolverHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.ResolverHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.ResourceHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.ResourceHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.UnitOfWorkHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.UnitOfWorkHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.spi.RestProducerFactoryHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.RestProducerFactoryHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.ServiceHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.service.ServiceHelper
+
+  # Idempotent repository classes moved
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.processor.idempotent.FileIdempotentRepository
+      newFullyQualifiedTypeName: org.apache.camel.support.processor.idempotent.FileIdempotentRepository
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.processor.idempotent.MemoryIdempotentRepository
+      newFullyQualifiedTypeName: org.apache.camel.support.processor.idempotent.MemoryIdempotentRepository
+
+  # Exception classes moved
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.processor.validation.PredicateValidationException
+      newFullyQualifiedTypeName: org.apache.camel.support.processor.PredicateValidationException
+
+  # Other utility classes moved
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.toolbox.AggregationStrategies
+      newFullyQualifiedTypeName: org.apache.camel.builder.AggregationStrategies
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.processor.RedeliveryPolicy
+      newFullyQualifiedTypeName: org.apache.camel.processor.errorhandler.RedeliveryPolicy
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.management.JmxSystemPropertyKeys
+      newFullyQualifiedTypeName: org.apache.camel.api.management.JmxSystemPropertyKeys
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.builder.xml.XPathBuilder
+      newFullyQualifiedTypeName: org.apache.camel.language.xpath.XPathBuilder
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.language.XPath
+      newFullyQualifiedTypeName: org.apache.camel.language.xpath.XPath
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.builder.xml.InvalidXPathExpression
+      newFullyQualifiedTypeName: org.apache.camel.language.xpath.InvalidXPathException
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.language.Bean
+      newFullyQualifiedTypeName: org.apache.camel.language.bean.Bean
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.language.Simple
+      newFullyQualifiedTypeName: org.apache.camel.language.simple.Simple
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.language.SpEL
+      newFullyQualifiedTypeName: org.apache.camel.language.spel.SpEL
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.converter.stream.OutputStreamBuilder
+      newFullyQualifiedTypeName: org.apache.camel.support.builder.OutputStreamBuilder
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.jndi.JNDIContext
+      newFullyQualifiedTypeName: org.apache.camel.support.jndi.JNDIContext
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.ThreadPoolRejectedPolicy
+      newFullyQualifiedTypeName: org.apache.camel.util.concurrent.ThreadPoolRejectedPolicy
+
+  # Language annotation moves
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.language.LanguageAnnotation
+      newFullyQualifiedTypeName: org.apache.camel.support.language.LanguageAnnotation
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.InvokeOnHeader
+      newFullyQualifiedTypeName: org.apache.camel.spi.InvokeOnHeader
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.InvokeOnHeaders
+      newFullyQualifiedTypeName: org.apache.camel.spi.InvokeOnHeaders
+
+  # Component utility classes moved
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.component.ApiMethodPropertiesHelper
+      newFullyQualifiedTypeName: org.apache.camel.support.component.ApiMethodPropertiesHelper
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.component.ArgumentSubstitutionParser
+      newFullyQualifiedTypeName: org.apache.camel.support.component.ArgumentSubstitutionParser
+
+  # JSSE classes moved
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.jsse.SSLContextParameters
+      newFullyQualifiedTypeName: org.apache.camel.support.jsse.SSLContextParameters
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.jsse.KeyStoreParameters
+      newFullyQualifiedTypeName: org.apache.camel.support.jsse.KeyStoreParameters
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.jsse.KeyManagersParameters
+      newFullyQualifiedTypeName: org.apache.camel.support.jsse.KeyManagersParameters
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.util.jsse.TrustManagersParameters
+      newFullyQualifiedTypeName: org.apache.camel.support.jsse.TrustManagersParameters
+
+---
+# Remove deprecated classes that no longer exist in Camel 3.0
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel30.removedClasses
+displayName: Removed deprecated classes in Camel 3.0
+description: Remove references to classes that were deprecated in Camel 2.x and removed in 3.0.
+recipeList:
+  # CompositeRegistry and PropertyPlaceholderDelegateRegistry removed
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.CompositeRegistry
+      newFullyQualifiedTypeName: org.apache.camel.support.DefaultRegistry
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.impl.PropertyPlaceholderDelegateRegistry
+      newFullyQualifiedTypeName: org.apache.camel.support.DefaultRegistry
+
+  # @Constant annotation removed (use @Simple instead)
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.Constant
+      newFullyQualifiedTypeName: org.apache.camel.language.simple.Simple
+
+---
+# Component URI scheme renames
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel30.componentRenames
+displayName: Renamed component schemes in Camel 3.0
+description: Apache Camel 3.0 renamed many component schemes (http4→http, netty4→netty, etc).
+recipeList:
+  # http4 → http
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.http4.HttpComponent
+      newFullyQualifiedTypeName: org.apache.camel.component.http.HttpComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.http4.HttpEndpoint
+      newFullyQualifiedTypeName: org.apache.camel.component.http.HttpEndpoint
+
+  # hdfs2 → hdfs
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.hdfs2.HdfsComponent
+      newFullyQualifiedTypeName: org.apache.camel.component.hdfs.HdfsComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.hdfs2.HdfsEndpoint
+      newFullyQualifiedTypeName: org.apache.camel.component.hdfs.HdfsEndpoint
+
+  # mina2 → mina
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.mina2.MinaComponent
+      newFullyQualifiedTypeName: org.apache.camel.component.mina.MinaComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.mina2.MinaEndpoint
+      newFullyQualifiedTypeName: org.apache.camel.component.mina.MinaEndpoint
+
+  # mongodb3 → mongodb
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.mongodb3.MongoDbComponent
+      newFullyQualifiedTypeName: org.apache.camel.component.mongodb.MongoDbComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.mongodb3.MongoDbEndpoint
+      newFullyQualifiedTypeName: org.apache.camel.component.mongodb.MongoDbEndpoint
+
+  # netty4-http → netty-http
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.netty4.http.NettyHttpComponent
+      newFullyQualifiedTypeName: org.apache.camel.component.netty.http.NettyHttpComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.netty4.http.NettyHttpEndpoint
+      newFullyQualifiedTypeName: org.apache.camel.component.netty.http.NettyHttpEndpoint
+
+  # netty4 → netty
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.netty4.NettyComponent
+      newFullyQualifiedTypeName: org.apache.camel.component.netty.NettyComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.netty4.NettyEndpoint
+      newFullyQualifiedTypeName: org.apache.camel.component.netty.NettyEndpoint
+
+  # quartz2 → quartz
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.quartz2.QuartzComponent
+      newFullyQualifiedTypeName: org.apache.camel.component.quartz.QuartzComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.quartz2.QuartzEndpoint
+      newFullyQualifiedTypeName: org.apache.camel.component.quartz.QuartzEndpoint
+
+  # rxjava2 → rxjava
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.rxjava2.RxJavaComponent
+      newFullyQualifiedTypeName: org.apache.camel.component.rxjava.RxJavaComponent
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.apache.camel.component.rxjava2.RxJavaEndpoint
+      newFullyQualifiedTypeName: org.apache.camel.component.rxjava.RxJavaEndpoint
+
+---
+# Spring Boot starter groupId change
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel30.springBootStarterGroupIdChange
+displayName: Change Spring Boot starter groupId to org.apache.camel.springboot
+description: Apache Camel 3.0 changed Spring Boot starters from org.apache.camel to org.apache.camel.springboot groupId.
+recipeList:
+  - org.openrewrite.maven.ChangeParentPom:
+      oldGroupId: org.apache.camel
+      oldArtifactId: camel-spring-boot-dependencies
+      newGroupId: org.apache.camel.springboot
+      newArtifactId: camel-spring-boot-dependencies
+      newVersion: 3.0.x
+
+---
+# AWS component split
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel30.awsComponentSplit
+displayName: AWS component split into multiple components
+description: Apache Camel 3.0 split the monolithic camel-aws into multiple components (camel-aws-s3, camel-aws-sqs, etc).
+recipeList:
+  - org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId:
+      oldGroupId: org.apache.camel
+      oldArtifactId: camel-aws
+      newGroupId: org.apache.camel
+      newArtifactId: camel-aws-s3
+      newVersion: 3.0.x
+  # Note: Users will need to manually add other AWS component dependencies as needed
+  # (camel-aws-sqs, camel-aws-sns, camel-aws-kinesis, etc.)
+
+---
+# Removed dependencies
+type: specs.openrewrite.org/v1beta/recipe
+name: org.apache.camel.upgrade.camel30.removedDependencies
+displayName: Remove dependencies that no longer exist in Camel 3.0
+description: Apache Camel 3.0 removed several components that were deprecated in 2.x.
+recipeList:
+  # Old camel-http (replaced by camel-http which was camel-http4)
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: org.apache.camel
+      artifactId: camel-http
+  # camel-jibx (not working on JDK 8+)
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: org.apache.camel
+      artifactId: camel-jibx
+  # camel-boon (not working on JDK 9+)
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: org.apache.camel
+      artifactId: camel-boon
+  # camel-linkedin (no replacement)
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: org.apache.camel
+      artifactId: camel-linkedin
+  # camel-restlet (deprecated)
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: org.apache.camel
+      artifactId: camel-restlet

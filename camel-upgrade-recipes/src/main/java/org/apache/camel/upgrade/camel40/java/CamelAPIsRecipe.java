@@ -28,11 +28,21 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangeType;
 import org.openrewrite.java.ImplementInterface;
 import org.openrewrite.java.RemoveImplements;
-import org.openrewrite.java.tree.*;
+import org.openrewrite.java.tree.Comment;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Space;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Markers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.SimpleBeanInfo;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 /**
@@ -42,6 +52,7 @@ import java.util.regex.Pattern;
 @EqualsAndHashCode(callSuper = false)
 @Value
 public class CamelAPIsRecipe extends Recipe {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CamelAPIsRecipe.class);
 
     private static final String MATCHER_CONTEXT_GET_ENDPOINT_MAP = "org.apache.camel.CamelContext getEndpointMap()";
     private static final String MATCHER_CONTEXT_GET_EXT = "org.apache.camel.CamelContext getExtension(java.lang.Class)";
@@ -72,7 +83,7 @@ public class CamelAPIsRecipe extends Recipe {
         return RecipesUtil.newVisitor(new AbstractCamelJavaVisitor() {
 
             //Cache for all methodInvocations CamelContext adapt(java.lang.Class).
-            private Map<UUID, Tree> adaptCache = new HashMap<>();
+            private Map<UUID, Tree> adaptCache = new ConcurrentHashMap<>();
 
             @Override
             protected J.Import doVisitImport(J.Import _import, ExecutionContext ctx) {
@@ -229,6 +240,7 @@ public class CamelAPIsRecipe extends Recipe {
                             newValue = RecipesUtil.Category.valueOf(originalValue.get().toUpperCase().replaceAll("\"", ""))
                                     .getValue();
                         } catch (IllegalArgumentException e) {
+                            LOGGER.warn("Ignoring unknown category: {}", originalValue.get());
                             newValue = originalValue.get() + "/*unknown_value*/";
                         }
 
