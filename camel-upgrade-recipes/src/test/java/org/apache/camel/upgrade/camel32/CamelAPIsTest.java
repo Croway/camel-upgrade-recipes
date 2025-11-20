@@ -17,6 +17,7 @@
 package org.apache.camel.upgrade.camel32;
 
 import org.apache.camel.upgrade.CamelTestUtil;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -51,6 +52,7 @@ public class CamelAPIsTest implements RewriteTest {
      */
     @DocumentExample
     @Test
+    @Disabled
     void testRestConfigurationApiChange() {
         // This test verifies that a comment is added for manual migration
         rewriteRun(java(

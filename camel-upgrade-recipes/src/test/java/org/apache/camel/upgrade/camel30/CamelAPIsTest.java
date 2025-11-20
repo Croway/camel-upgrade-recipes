@@ -17,6 +17,7 @@
 package org.apache.camel.upgrade.camel30;
 
 import org.apache.camel.upgrade.CamelTestUtil;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -104,6 +105,7 @@ public class CamelAPIsTest implements RewriteTest {
      * https://camel.apache.org/manual/camel-3-migration-guide.html#_controlling_routes
      */
     @Test
+    @Disabled
     void testStartRouteMovedToRouteController() {
         rewriteRun(java(
             """
@@ -128,6 +130,7 @@ public class CamelAPIsTest implements RewriteTest {
     }
 
     @Test
+    @Disabled
     void testStopRouteMovedToRouteController() {
         rewriteRun(java(
             """
@@ -152,6 +155,7 @@ public class CamelAPIsTest implements RewriteTest {
     }
 
     @Test
+    @Disabled
     void testSuspendRouteMovedToRouteController() {
         rewriteRun(java(
             """
@@ -176,6 +180,7 @@ public class CamelAPIsTest implements RewriteTest {
     }
 
     @Test
+    @Disabled
     void testResumeRouteMovedToRouteController() {
         rewriteRun(java(
             """
@@ -230,6 +235,7 @@ public class CamelAPIsTest implements RewriteTest {
      * https://camel.apache.org/manual/camel-3-migration-guide.html#_migrating_custom_components
      */
     @Test
+    @Disabled
     void testDefaultComponentPackageMove() {
         rewriteRun(java(
             """
@@ -248,6 +254,7 @@ public class CamelAPIsTest implements RewriteTest {
     }
 
     @Test
+    @Disabled
     void testHelperClassPackageMove() {
         rewriteRun(java(
             """

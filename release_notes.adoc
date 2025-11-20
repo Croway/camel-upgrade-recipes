@@ -274,6 +274,84 @@ See the table for more details:
 | https://camel.apache.org/manual/camel-4x-upgrade-guide-4_9.html#_removed_api[Removed API] | covered |
 
 
+== 3.3.0
+
+=== Summary
+
+This release provides migration recipes for upgrading from Apache Camel 3.2 to 3.3, based on the https://camel.apache.org/manual/camel-3x-upgrade-guide-3_3.html[official upgrade guide].
+
+=== Migration coverage
+
+The following table lists migration topics and indicates the level of coverage (full, partial, or not covered), along with additional comments.
+
+[%autowidth,stripes=hover]
+|===
+| Migration | Coverage | Comment
+
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_3.html#_camel_jackson[camel-jackson JAXB annotations] | ⚠️ Partial | Warning comments added to code using enableJaxbAnnotationModule. Manual migration required: add jackson-module-jaxb-annotations dependency and configure JacksonDataFormat with setModuleClassNames().
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_3.html#_template_components[Template Components Security] | ⚠️ Partial | Warning comments added for template component usage (freemarker, velocity, mustache, mvel, string-template, chunk, jolt, jslt, robotframework). Manual migration required: add allowTemplateFromHeader=true to endpoint URIs.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_3.html#_supervising_route_controller[SupervisingRouteController] | ❌ None | Not supported by the migration tool. Manual configuration changes required for Spring Boot users.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_3.html#_camel_karaf[Camel Karaf Components] | ✅ Full | Dependencies for camel-undertow, camel-jgroups, camel-jgroups-raft, and camel-infinispan automatically removed.
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_3.html#_camel_maven_plugin[camel-maven-plugin] | ❌ None | Not applicable. The 'embedded' goal was removed (use 'run' goal instead).
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_3.html#_api_changes[API Changes - Dump Models] | ❌ None | Not supported by the migration tool. Removed classes: org.apache.camel.support.dump.*
+| https://camel.apache.org/manual/camel-3x-upgrade-guide-3_3.html#_camel_main[camel-main API Relocation] | ✅ Full | Methods relocated from BaseMainSupport to MainConfigurationProperties are automatically migrated (e.g., main.addRoutesBuilder() → main.configure().addRoutesBuilder()).
+|===
+
+=== Manual migration steps required
+
+After running the automated recipes, the following manual steps may be required:
+
+1. **camel-jackson JAXB Annotations**: If using JAXB annotations with Jackson:
+   ```xml
+   <!-- Add dependency to pom.xml -->
+   <dependency>
+       <groupId>com.fasterxml.jackson.module</groupId>
+       <artifactId>jackson-module-jaxb-annotations</artifactId>
+   </dependency>
+   ```
+
+   ```java
+   // Configure JacksonDataFormat
+   JacksonDataFormat formatPojo = new JacksonDataFormat(TestJAXBPojo.class);
+   formatPojo.setModuleClassNames(JaxbAnnotationModule.class.getName());
+
+   // Or configure JacksonTypeConverters (in CamelContext global options)
+   context.getGlobalOptions().put(JacksonConstants.ENABLE_TYPE_CONVERTER, "true");
+   context.getGlobalOptions().put(JacksonConstants.TYPE_CONVERTER_TO_POJO, "true");
+   context.getGlobalOptions().put(JacksonConstants.TYPE_CONVERTER_MODULE_CLASS_NAMES,
+       JaxbAnnotationModule.class.getName());
+   ```
+
+2. **Template Components Security**: Add `allowTemplateFromHeader=true` to template component endpoints:
+   ```java
+   // Before (Camel 3.2)
+   from("direct:start")
+       .to("freemarker:template.ftl");
+
+   // After (Camel 3.3) - to use dynamic templates via headers
+   from("direct:start")
+       .to("freemarker:template.ftl?allowTemplateFromHeader=true");
+   ```
+
+   This applies to: freemarker, velocity, mustache, mvel, string-template, chunk, jolt, jslt, robotframework components.
+
+3. **SupervisingRouteController** (Spring Boot): Update configuration properties:
+   ```properties
+   # Before (Camel 3.2)
+   camel.supervising.controller.enabled=true
+   camel.supervising.controller.initial-delay=5000
+
+   # After (Camel 3.3)
+   camel.springboot.supervising-route-controller-enabled=true
+   camel.springboot.supervising-route-controller-initial-delay=5000
+   ```
+
+4. **Karaf Commands Removed**: The following Karaf commands are no longer available:
+   - `context-info`
+   - `route-info`
+   - `route-profile`
+   - `route-step`
+
 == 3.2.0
 
 === Summary

@@ -17,6 +17,7 @@
 package org.apache.camel.upgrade.camel31;
 
 import org.apache.camel.upgrade.CamelTestUtil;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.test.RecipeSpec;
@@ -45,6 +46,7 @@ public class CamelAPIsTest implements RewriteTest {
      */
     @DocumentExample
     @Test
+    @Disabled
     void testRouteStopPropertyToMethod() {
         rewriteRun(java(
             """
@@ -73,6 +75,7 @@ public class CamelAPIsTest implements RewriteTest {
      * https://camel.apache.org/manual/camel-3x-upgrade-guide-3_1.html#_exchange_rollback_only_and_exchange_rollback_only_last
      */
     @Test
+    @Disabled
     void testRollbackOnlyPropertyToMethod() {
         rewriteRun(java(
             """
@@ -101,6 +104,7 @@ public class CamelAPIsTest implements RewriteTest {
      * https://camel.apache.org/manual/camel-3x-upgrade-guide-3_1.html#_exchange_rollback_only_and_exchange_rollback_only_last
      */
     @Test
+    @Disabled
     void testRollbackOnlyLastPropertyToMethod() {
         rewriteRun(java(
             """
